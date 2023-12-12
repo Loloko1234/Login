@@ -48,9 +48,10 @@ if ($stmt->execute()) {
     exit;
     
 } else {
+    
     if ($mysqli->errno === 1062) {
-        die("Email already exists");}
-        else{
+        die("email already taken");
+    } else {
         die($mysqli->error . " " . $mysqli->errno);
     }
-    }
+}

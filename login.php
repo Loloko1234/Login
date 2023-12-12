@@ -1,31 +1,37 @@
 <?php
+
 $is_invalid = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    
     $mysqli = require __DIR__ . "/database.php";
     
-    $email = $mysqli->real_escape_string($_POST["email"]);
-    $sql = "SELECT * FROM user WHERE email = '$email'";
+    $sql = sprintf("SELECT * FROM user
+                    WHERE email = '%s'",
+                   $mysqli->real_escape_string($_POST["email"]));
     
     $result = $mysqli->query($sql);
     
-    if ($mysqli->error) {
-        die("Query error: " . $mysqli->error);
-    }
-
     $user = $result->fetch_assoc();
-
+    
     if ($user) {
-        if (password_verify($_POST["password"], $user["password_hash"])){
-            session_start();   
-
+        
+        if (password_verify($_POST["password"], $user["password_hash"])) {
+            
+            session_start();
+            
+            session_regenerate_id();
+            
             $_SESSION["user_id"] = $user["id"];
+            
             header("Location: index.php");
             exit;
-        };
+        }
     }
+    
     $is_invalid = true;
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -37,18 +43,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <body>
     
     <h1>Login</h1>
+    
     <?php if ($is_invalid): ?>
-        <p style="color: red;">Invalid email or password</p>
+        <em>Invalid login</em>
     <?php endif; ?>
     
-    <form method ="post">
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" value="<?= htmlspecialchars($_POST["email"] ?? "") ?>">
+    <form method="post">
+        <label for="email">email</label>
+        <input type="email" name="email" id="email"
+               value="<?= htmlspecialchars($_POST["email"] ?? "") ?>">
         
         <label for="password">Password</label>
         <input type="password" name="password" id="password">
         
-        <button type="submit">Login</button>
+        <button>Log in</button>
     </form>
-    </body>
+    
+</body>
 </html>
